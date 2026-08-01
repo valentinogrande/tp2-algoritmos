@@ -1,34 +1,8 @@
-"""
-TP 2
-Grande Valentino, Gibbons Francisco, Figueroa Casas Felipe, Girardi Miqueas.
-
-jugadores: [str]
-rachas_mayor_menor: [int]
-mayor_menor_jugadas: [int]
-secreto_jugadas: [int]
-secreto_ganadas: [int]
-secreto_perdidas: [int]
-blackjack_jugadas: [int]
-blackjack_ganadas: [int]
-parimpar_jugadas: [int]
-parimpar_aciertos: [int]
-creditos: [int]
-numero_maximo_intentos_secreto: int
-RED: str
-DARK_RED: str
-BOLD: str
-RESET: str
-WHITE: str
-texto: str
-"""
-
 import os
 import random
 
-# lista de jugadores, maximo 10, compartida por todos los juegos
 jugadores = []
 
-# datos de cada jugador, mismo indice que en la lista jugadores
 rachas_mayor_menor = []
 mayor_menor_jugadas = []
 
@@ -85,27 +59,25 @@ texto = f"""
 
 
 def clear():
-    if os.name == "nt":  # windows
+    if os.name == "nt":
         os.system("cls")
-    elif os.name == "posix":  # unix
+    elif os.name == "posix":
         os.system("clear")
     else:
         print("No se puede limpiar la pantalla")
 
 
-def pedir_jugador() -> int:
+def pedir_jugador():
     nombre = input("Ingrese su nombre (2 o mas caracteres): ")
 
     while len(nombre) < 2:
         nombre = input("Ingrese su nombre (2 o mas caracteres): ")
 
     if nombre in jugadores:
-        # es un jugador que ya entro antes
         indice = jugadores.index(nombre)
         print("Bienvenido de nuevo", nombre)
 
     else:
-        # we can not add one more player
         if len(jugadores) == 10:
             print("No hay cupos para un nuevo jugador")
             indice = -1
@@ -248,8 +220,7 @@ def numero_secreto():
     input("Presione enter para continuar...")
 
 
-def armar_mazo() -> [str]:
-    # un solo mazo de 52 cartas, 4 palos y 13 cartas por palo
+def armar_mazo():
     palos = ["corazones", "diamantes", "picas", "treboles"]
     numeros = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"]
 
@@ -262,15 +233,14 @@ def armar_mazo() -> [str]:
     return mazo
 
 
-def sacar_carta(mazo: [str]) -> str:
-    # se saca la carta del mazo asi no puede salir repetida
+def sacar_carta(mazo):
     indice_carta = random.randint(0, len(mazo) - 1)
     carta = mazo[indice_carta]
     mazo.pop(indice_carta)
     return carta
 
 
-def sumar_puntos(cartas: [str]) -> int:
+def sumar_puntos(cartas):
     total = 0
     ases = 0
 
@@ -287,7 +257,6 @@ def sumar_puntos(cartas: [str]) -> int:
         else:
             total += int(numero)
 
-    # el As deja de valer 11 y pasa a valer 1 si nos pasamos de 21
     while total > 21 and ases > 0:
         total -= 10
         ases -= 1
@@ -357,7 +326,6 @@ def blackjack():
 
         else:
 
-            # la banca pide con 16 o menos y se planta con 17 o mas
             while puntos_banca <= 16:
                 carta = sacar_carta(mazo)
                 cartas_banca.append(carta)
@@ -463,15 +431,13 @@ def par_impar():
     input("Presione enter para continuar...")
 
 
-def ordenar_y_mostrar(nombres: [str], valores: [int], descendente: bool):
+def ordenar_y_mostrar(nombres, valores, descendente):
 
     if len(nombres) == 0:
         print("Todavia no hay jugadores")
 
     n = len(valores)
 
-    # metodo del falso burbuja, ordenamos las dos listas a la vez
-    # para creciente o decreciente solo cambia el signo de la comparacion
     for i in range(n - 1):
         for j in range(i + 1, n):
 
@@ -523,7 +489,6 @@ def reporte():
 
         if opcion == "a":
 
-            # ordenados de mayor a menor por victorias, excepto mayor/menor
             print("\n[*] Numero secreto")
             ordenar_y_mostrar(jugadores.copy(), secreto_ganadas.copy(), True)
 
@@ -533,7 +498,8 @@ def reporte():
             print("\n[*] Par o impar")
             ordenar_y_mostrar(jugadores.copy(), parimpar_aciertos.copy(), True)
 
-            input("\nPresione enter para continuar...")
+            print()
+            input("Presione enter para continuar...")
 
         elif opcion == "b":
 
@@ -578,11 +544,11 @@ def reporte():
                 if not jugo_algo:
                     print(nombre, "todavia no jugo a ningun juego")
 
-            input("\nPresione enter para continuar...")
+            print()
+            input("Presione enter para continuar...")
 
         elif opcion == "c":
 
-            # solo los que jugaron al par o impar, de menor a mayor credito
             nombres_parimpar = []
             creditos_parimpar = []
 
@@ -598,7 +564,8 @@ def reporte():
             else:
                 ordenar_y_mostrar(nombres_parimpar, creditos_parimpar, False)
 
-            input("\nPresione enter para continuar...")
+            print()
+            input("Presione enter para continuar...")
 
         elif opcion == "d":
 
@@ -615,7 +582,8 @@ def reporte():
                 else:
                     print("La racha de", nombre, "en mayor o menor es:", rachas_mayor_menor[indice])
 
-            input("\nPresione enter para continuar...")
+            print()
+            input("Presione enter para continuar...")
 
 
 def main():
@@ -646,23 +614,26 @@ def main():
         while option not in valid:
             option = input("Ingrese una opcion: ").lower()
 
-        match option:
+        if option == "a":
+            mayor_menor()
 
-            case "a": mayor_menor()
+        elif option == "b":
+            numero_secreto()
 
-            case "b": numero_secreto()
+        elif option == "c":
+            blackjack()
 
-            case "c": blackjack()
+        elif option == "d":
+            par_impar()
 
-            case "d": par_impar()
+        elif option == "e":
+            reporte()
 
-            case "e": reporte()
+        elif option == "f":
 
-            case "f":
+            clear()
 
-                clear()
-
-                print("""
+            print("""
 +==============================================================+
 |                                                              |
 |   Gracias por jugar, no apueste, juega por diversion         |
@@ -670,7 +641,7 @@ def main():
 +==============================================================+
     """)
 
-                input("Presione enter para salir...")
+            input("Presione enter para salir...")
 
 
 
