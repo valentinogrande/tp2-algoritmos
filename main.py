@@ -1,21 +1,27 @@
 import os
 import random
 
-jugadores = []
+MAX_JUGADORES = 10
+TAMANIO_MAZO = 52
+MAX_CARTAS_MANO = TAMANIO_MAZO
 
-rachas_mayor_menor = []
-mayor_menor_jugadas = []
+jugadores = [""] * MAX_JUGADORES
 
-secreto_jugadas = []
-secreto_ganadas = []
-secreto_perdidas = []
+rachas_mayor_menor = [0] * MAX_JUGADORES
+mayor_menor_jugadas = [0] * MAX_JUGADORES
 
-blackjack_jugadas = []
-blackjack_ganadas = []
+secreto_jugadas = [0] * MAX_JUGADORES
+secreto_ganadas = [0] * MAX_JUGADORES
+secreto_perdidas = [0] * MAX_JUGADORES
 
-parimpar_jugadas = []
-parimpar_aciertos = []
-creditos = []
+blackjack_jugadas = [0] * MAX_JUGADORES
+blackjack_ganadas = [0] * MAX_JUGADORES
+
+parimpar_jugadas = [0] * MAX_JUGADORES
+parimpar_aciertos = [0] * MAX_JUGADORES
+creditos = [0] * MAX_JUGADORES
+
+cantidad_jugadores = 0
 
 numero_maximo_intentos_secreto = 6
 
@@ -67,34 +73,52 @@ def clear():
         print("No se puede limpiar la pantalla")
 
 
+def buscar_jugador(nombre):
+    indice = -1
+    i = 0
+
+    while i < cantidad_jugadores:
+        if jugadores[i] == nombre:
+            indice = i
+        i += 1
+
+    return indice
+
+
 def pedir_jugador():
+    global cantidad_jugadores
+
     nombre = input("Ingrese su nombre (2 o mas caracteres): ")
 
     while len(nombre) < 2:
         nombre = input("Ingrese su nombre (2 o mas caracteres): ")
 
-    if nombre in jugadores:
-        indice = jugadores.index(nombre)
+    indice = buscar_jugador(nombre)
+
+    if indice != -1:
         print("Bienvenido de nuevo", nombre)
 
     else:
-        if len(jugadores) == 10:
+        if cantidad_jugadores == MAX_JUGADORES:
             print("No hay cupos para un nuevo jugador")
             indice = -1
 
         else:
-            jugadores.append(nombre)
-            rachas_mayor_menor.append(0)
-            mayor_menor_jugadas.append(0)
-            secreto_jugadas.append(0)
-            secreto_ganadas.append(0)
-            secreto_perdidas.append(0)
-            blackjack_jugadas.append(0)
-            blackjack_ganadas.append(0)
-            parimpar_jugadas.append(0)
-            parimpar_aciertos.append(0)
-            creditos.append(1000)
-            indice = len(jugadores) - 1
+            indice = cantidad_jugadores
+
+            jugadores[indice] = nombre
+            rachas_mayor_menor[indice] = 0
+            mayor_menor_jugadas[indice] = 0
+            secreto_jugadas[indice] = 0
+            secreto_ganadas[indice] = 0
+            secreto_perdidas[indice] = 0
+            blackjack_jugadas[indice] = 0
+            blackjack_ganadas[indice] = 0
+            parimpar_jugadas[indice] = 0
+            parimpar_aciertos[indice] = 0
+            creditos[indice] = 1000
+
+            cantidad_jugadores += 1
 
     return indice
 
@@ -220,32 +244,53 @@ def numero_secreto():
     input("Presione enter para continuar...")
 
 
-def armar_mazo():
+def armar_mazo(mazo):
     palos = ["corazones", "diamantes", "picas", "treboles"]
     numeros = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"]
 
-    mazo = []
+    cantidad = 0
+    i = 0
 
-    for palo in palos:
-        for numero in numeros:
-            mazo.append(numero + " de " + palo)
+    while i < len(palos):
+        j = 0
 
-    return mazo
+        while j < len(numeros):
+            mazo[cantidad] = numeros[j] + " de " + palos[i]
+            cantidad += 1
+            j += 1
+
+        i += 1
+
+    return cantidad
 
 
-def sacar_carta(mazo):
-    indice_carta = random.randint(0, len(mazo) - 1)
+def sacar_carta(mazo, cantidad):
+    indice_carta = random.randint(0, cantidad - 1)
     carta = mazo[indice_carta]
-    mazo.pop(indice_carta)
+
+    mazo[indice_carta] = mazo[cantidad - 1]
+
     return carta
 
 
-def sumar_puntos(cartas):
+def obtener_numero_carta(carta):
+    numero = ""
+    i = 0
+
+    while carta[i] != " ":
+        numero += carta[i]
+        i += 1
+
+    return numero
+
+
+def sumar_puntos(cartas, cantidad):
     total = 0
     ases = 0
+    i = 0
 
-    for carta in cartas:
-        numero = carta.split(" ")[0]
+    while i < cantidad:
+        numero = obtener_numero_carta(cartas[i])
 
         if numero == "J" or numero == "Q" or numero == "K":
             total += 10
@@ -256,6 +301,8 @@ def sumar_puntos(cartas):
 
         else:
             total += int(numero)
+
+        i += 1
 
     while total > 21 and ases > 0:
         total -= 10
@@ -278,15 +325,35 @@ def blackjack():
 
     while jugar_otra:
 
-        mazo = armar_mazo()
+        mazo = [""] * TAMANIO_MAZO
+        cantidad_mazo = armar_mazo(mazo)
 
-        cartas_jugador = [sacar_carta(mazo), sacar_carta(mazo)]
-        cartas_banca = [sacar_carta(mazo), sacar_carta(mazo)]
+        cartas_jugador = [""] * MAX_CARTAS_MANO
+        cartas_banca = [""] * MAX_CARTAS_MANO
+
+        cantidad_cartas_jugador = 0
+        cantidad_cartas_banca = 0
+
+        cartas_jugador[cantidad_cartas_jugador] = sacar_carta(mazo, cantidad_mazo)
+        cantidad_cartas_jugador += 1
+        cantidad_mazo -= 1
+
+        cartas_banca[cantidad_cartas_banca] = sacar_carta(mazo, cantidad_mazo)
+        cantidad_cartas_banca += 1
+        cantidad_mazo -= 1
+
+        cartas_jugador[cantidad_cartas_jugador] = sacar_carta(mazo, cantidad_mazo)
+        cantidad_cartas_jugador += 1
+        cantidad_mazo -= 1
+
+        cartas_banca[cantidad_cartas_banca] = sacar_carta(mazo, cantidad_mazo)
+        cantidad_cartas_banca += 1
+        cantidad_mazo -= 1
 
         blackjack_jugadas[indice] += 1
 
-        puntos_jugador = sumar_puntos(cartas_jugador)
-        puntos_banca = sumar_puntos(cartas_banca)
+        puntos_jugador = sumar_puntos(cartas_jugador, cantidad_cartas_jugador)
+        puntos_banca = sumar_puntos(cartas_banca, cantidad_cartas_banca)
 
         print("\nCartas de la banca:", cartas_banca[0], "y", cartas_banca[1])
         print("Tus cartas:", cartas_jugador[0], "y", cartas_jugador[1])
@@ -304,9 +371,13 @@ def blackjack():
 
             if opcion == "pedir":
 
-                carta = sacar_carta(mazo)
-                cartas_jugador.append(carta)
-                puntos_jugador = sumar_puntos(cartas_jugador)
+                carta = sacar_carta(mazo, cantidad_mazo)
+                cantidad_mazo -= 1
+
+                cartas_jugador[cantidad_cartas_jugador] = carta
+                cantidad_cartas_jugador += 1
+
+                puntos_jugador = sumar_puntos(cartas_jugador, cantidad_cartas_jugador)
 
                 print("Sacaste:", carta)
                 print("Tus puntos:", puntos_jugador)
@@ -327,9 +398,13 @@ def blackjack():
         else:
 
             while puntos_banca <= 16:
-                carta = sacar_carta(mazo)
-                cartas_banca.append(carta)
-                puntos_banca = sumar_puntos(cartas_banca)
+                carta = sacar_carta(mazo, cantidad_mazo)
+                cantidad_mazo -= 1
+
+                cartas_banca[cantidad_cartas_banca] = carta
+                cantidad_cartas_banca += 1
+
+                puntos_banca = sumar_puntos(cartas_banca, cantidad_cartas_banca)
                 print("La banca saco:", carta)
 
             print("Puntos de la banca:", puntos_banca)
@@ -431,15 +506,29 @@ def par_impar():
     input("Presione enter para continuar...")
 
 
-def ordenar_y_mostrar(nombres, valores, descendente):
+def copiar_arreglo(origen, cantidad):
+    copia = [None] * MAX_JUGADORES
+    i = 0
 
-    if len(nombres) == 0:
+    while i < cantidad:
+        copia[i] = origen[i]
+        i += 1
+
+    return copia
+
+
+def ordenar_y_mostrar(nombres, valores, cantidad, descendente):
+
+    if cantidad == 0:
         print("Todavia no hay jugadores")
+        return
 
-    n = len(valores)
+    i = 0
 
-    for i in range(n - 1):
-        for j in range(i + 1, n):
+    while i < cantidad - 1:
+        j = i + 1
+
+        while j < cantidad:
 
             hay_que_cambiar = False
 
@@ -459,13 +548,19 @@ def ordenar_y_mostrar(nombres, valores, descendente):
                 nombres[i] = nombres[j]
                 nombres[j] = aux
 
-    for i in range(len(nombres)):
+            j += 1
+
+        i += 1
+
+    i = 0
+
+    while i < cantidad:
         print(i + 1, "-", nombres[i], ":", valores[i])
+        i += 1
 
 
 def reporte():
 
-    valid = ["a", "b", "c", "d", "e"]
     opcion = ""
 
     while opcion != "e":
@@ -484,19 +579,40 @@ def reporte():
 
         opcion = input("Ingrese una opcion: ").lower()
 
-        while opcion not in valid:
+        while (
+            opcion != "a"
+            and opcion != "b"
+            and opcion != "c"
+            and opcion != "d"
+            and opcion != "e"
+        ):
             opcion = input("Ingrese una opcion: ").lower()
 
         if opcion == "a":
 
             print("\n[*] Numero secreto")
-            ordenar_y_mostrar(jugadores.copy(), secreto_ganadas.copy(), True)
+            ordenar_y_mostrar(
+                copiar_arreglo(jugadores, cantidad_jugadores),
+                copiar_arreglo(secreto_ganadas, cantidad_jugadores),
+                cantidad_jugadores,
+                True,
+            )
 
             print("\n[*] BlackJack")
-            ordenar_y_mostrar(jugadores.copy(), blackjack_ganadas.copy(), True)
+            ordenar_y_mostrar(
+                copiar_arreglo(jugadores, cantidad_jugadores),
+                copiar_arreglo(blackjack_ganadas, cantidad_jugadores),
+                cantidad_jugadores,
+                True,
+            )
 
             print("\n[*] Par o impar")
-            ordenar_y_mostrar(jugadores.copy(), parimpar_aciertos.copy(), True)
+            ordenar_y_mostrar(
+                copiar_arreglo(jugadores, cantidad_jugadores),
+                copiar_arreglo(parimpar_aciertos, cantidad_jugadores),
+                cantidad_jugadores,
+                True,
+            )
 
             print()
             input("Presione enter para continuar...")
@@ -505,12 +621,13 @@ def reporte():
 
             nombre = input("Ingrese el nombre del jugador: ")
 
-            if nombre not in jugadores:
+            indice = buscar_jugador(nombre)
+
+            if indice == -1:
                 print("Ese jugador no existe")
 
             else:
 
-                indice = jugadores.index(nombre)
                 jugo_algo = False
 
                 print("\nJuegos jugados por", nombre)
@@ -549,20 +666,24 @@ def reporte():
 
         elif opcion == "c":
 
-            nombres_parimpar = []
-            creditos_parimpar = []
+            nombres_parimpar = [""] * MAX_JUGADORES
+            creditos_parimpar = [0] * MAX_JUGADORES
+            cantidad_parimpar = 0
 
-            for i in range(len(jugadores)):
+            i = 0
+
+            while i < cantidad_jugadores:
                 if parimpar_jugadas[i] > 0:
-                    nombres_parimpar.append(jugadores[i])
-                    creditos_parimpar.append(creditos[i])
+                    nombres_parimpar[cantidad_parimpar] = jugadores[i]
+                    creditos_parimpar[cantidad_parimpar] = creditos[i]
+                    cantidad_parimpar += 1
+                i += 1
 
             print("\n[*] Jugadores de par o impar segun su credito")
 
-            if len(nombres_parimpar) == 0:
-                print("Todavia nadie jugo al par o impar")
-            else:
-                ordenar_y_mostrar(nombres_parimpar, creditos_parimpar, False)
+            ordenar_y_mostrar(
+                nombres_parimpar, creditos_parimpar, cantidad_parimpar, False
+            )
 
             print()
             input("Presione enter para continuar...")
@@ -571,23 +692,27 @@ def reporte():
 
             nombre = input("Ingrese el nombre del jugador: ")
 
-            if nombre not in jugadores:
+            indice = buscar_jugador(nombre)
+
+            if indice == -1:
                 print("Ese jugador no existe")
 
             else:
-                indice = jugadores.index(nombre)
-
-                if mayor_menor_jugadas[indice] ==0:
+                if mayor_menor_jugadas[indice] == 0:
                     print(nombre, "todavia no jugo al mayor o menor")
                 else:
-                    print("La racha de", nombre, "en mayor o menor es:", rachas_mayor_menor[indice])
+                    print(
+                        "La racha de",
+                        nombre,
+                        "en mayor o menor es:",
+                        rachas_mayor_menor[indice],
+                    )
 
             print()
             input("Presione enter para continuar...")
 
 
 def main():
-    valid = ["a","b","c","d","e","f"]
 
     clear()
 
@@ -611,7 +736,14 @@ def main():
 
         option = input("Ingrese una opcion: ").lower()
 
-        while option not in valid:
+        while (
+            option != "a"
+            and option != "b"
+            and option != "c"
+            and option != "d"
+            and option != "e"
+            and option != "f"
+        ):
             option = input("Ingrese una opcion: ").lower()
 
         if option == "a":
@@ -642,7 +774,6 @@ def main():
     """)
 
             input("Presione enter para salir...")
-
 
 
 if __name__ == '__main__':
