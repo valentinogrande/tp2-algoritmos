@@ -1,3 +1,12 @@
+"""
+    Participantes:
+                1. Valentino Grande
+                2. Miqueas Girardi
+                3. Felipe Figueroa Casas
+                4. Francisco Gibbons
+    Comision: 108
+"""
+
 import os
 import random
 
@@ -430,6 +439,8 @@ def blackjack():
             respuesta = input("Ingrese si o no: ").lower()
 
         jugar_otra = respuesta == "si"
+
+    input("Presione enter para continuar...")
 
 
 def par_impar():
